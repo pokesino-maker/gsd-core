@@ -1,7 +1,7 @@
 ---
 name: gsd-framework-selector
 description: Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by /gsd:ai-integration-phase and /gsd-select-framework orchestrators.
-tools: Read, Bash, Grep, Glob, WebSearch, AskUserQuestion
+tools: Read, Bash, Grep, Glob, WebSearch, AskUserQuestion, semantic_search_nodes_tool
 color: cyan
 ---
 
@@ -17,7 +17,7 @@ Read `~/.claude/gsd-core/references/ai-frameworks.md` before asking questions. T
 <project_context>
 Scan for existing technology signals before the interview:
 ```bash
-find . -maxdepth 2 \( -name "package.json" -o -name "pyproject.toml" -o -name "requirements*.txt" \) -not -path "*/node_modules/*" 2>/dev/null | head -5
+Use semantic_search_nodes_tool (kind: "File", querying for package.json, pyproject.toml, or requirements.txt) to identify package files in the project root.
 ```
 Read found files to extract: existing AI libraries, model providers, language, team size signals. This prevents recommending a framework the team has already rejected.
 </project_context>

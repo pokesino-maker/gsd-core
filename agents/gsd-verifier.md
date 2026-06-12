@@ -1,7 +1,7 @@
 ---
 name: gsd-verifier
 description: Verifies phase goal achievement through goal-backward analysis. Checks codebase delivers what phase promised, not just that tasks completed. Creates VERIFICATION.md report.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, query_graph_tool, traverse_graph_tool, semantic_search_nodes_tool, get_knowledge_gaps_tool
 color: green
 # hooks:
 #   PostToolUse:
@@ -241,11 +241,8 @@ For each artifact in result:
 **For wiring verification (Level 3)**, check imports/usage manually for artifacts that pass Levels 1-2:
 
 ```bash
-# Import check
-grep -r "import.*$artifact_name" "${search_path:-src/}" --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l
-
-# Usage check (beyond imports)
-grep -r "$artifact_name" "${search_path:-src/}" --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "import" | wc -l
+# Import and usage check using the code graph
+Use query_graph_tool (pattern: importers_of or callers_of with the artifact name) to check if the artifact is imported and utilized across the project files.
 ```
 
 **Wiring status:**
@@ -287,10 +284,7 @@ grep -n -A 5 "set${STATE_VAR}\|${STATE_VAR}\s*=" "$artifact" 2>/dev/null | grep 
 3. **Verify the source produces real data** — does the API/store return actual data or static/empty values?
 
 ```bash
-# Check the API route or data source for real DB queries vs static returns
-grep -n -E "prisma\.|db\.|query\(|findMany|findOne|select|FROM" "$source_file" 2>/dev/null
-# Flag: static returns with no query
-grep -n -E "return.*json\(\s*\[\]|return.*json\(\s*\{\}" "$source_file" 2>/dev/null
+Use query_graph_tool (pattern: callers_of, callees_of) to verify if the API handler uses active database models (e.g. Prisma queries) or simply returns hardcoded mock JSON arrays/objects.
 ```
 
 4. **Check for disconnected props** — props passed to child components that are hardcoded empty at the call site
@@ -342,7 +336,7 @@ For each link:
 
 ```bash
 grep -E "fetch\(['\"].*$api_path|axios\.(get|post).*$api_path" "$component" 2>/dev/null
-grep -A 5 "fetch\|axios" "$component" | grep -E "await|\.then|setData|setState" 2>/dev/null
+Use query_graph_tool (pattern: callers_of) to verify structural calls from client components to endpoints, ensuring that responses (e.g. state setters, then/await) are active and handled.
 ```
 
 Status: WIRED (call + response handling) | PARTIAL (call, no response use) | NOT_WIRED (no call)
@@ -423,13 +417,8 @@ grep -E "^\- \`" "$PHASE_DIR"/*-SUMMARY.md | sed 's/.*`\([^`]*\)`.*/\1/' | sort 
 Run anti-pattern detection on each file:
 
 ```bash
-# Debt-marker comments
-grep -n -E "TBD|FIXME|XXX" "$file" 2>/dev/null
-# Warning-level cleanup comments
-grep -n -E "TODO|HACK|PLACEHOLDER" "$file" 2>/dev/null
-grep -n -E "placeholder|coming soon|will be here|not yet implemented|not available" "$file" -i 2>/dev/null
-# Empty implementations
-grep -n -E "return null|return \{\}|return \[\]|=> \{\}" "$file" 2>/dev/null
+# Scan for anti-patterns using code graph search
+Use semantic_search_nodes_tool (querying for "TODO", "FIXME", "return null", "placeholder", etc.) or get_knowledge_gaps_tool to identify code smells, debt comments, and empty implementations.
 # Hardcoded empty data (common stub patterns)
 grep -n -E "=\s*\[\]|=\s*\{\}|=\s*null|=\s*undefined" "$file" 2>/dev/null | grep -v -E "(test|spec|mock|fixture|\.test\.|\.spec\.)" 2>/dev/null
 # Props with hardcoded empty values (React/Vue/Svelte stub indicators)

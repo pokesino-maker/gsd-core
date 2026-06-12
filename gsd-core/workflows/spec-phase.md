@@ -100,11 +100,10 @@ If "Update": Load existing SPEC.md, continue to Step 3.
 - `{state_path}` — Decisions already made, current phase, blockers
 - ROADMAP.md phase entry — Phase description, goals, canonical refs
 
-**Grep the codebase** for code/files relevant to this phase goal. Look for:
-- Existing implementations of similar functionality
-- Integration points where new code will connect
-- Test coverage gaps relevant to the phase
-- Prior phase artifacts (SUMMARY.md, VERIFICATION.md) that inform current state
+Use code-review-graph tools to query the code structure and find integration points:
+- Use `semantic_search_nodes_tool` or `query_graph_tool` to search for classes, functions, or files related to the phase goal to locate existing implementations of similar functionality.
+- Use `traverse_graph_tool` or `get_impact_radius_tool` to explore the dependency hierarchy and identify where new code will connect (integration points).
+- Use local filesystem tools only to read specific prior phase artifacts (SUMMARY.md, VERIFICATION.md) under `.planning/` or targeted test files.
 
 **Synthesize current state** — the grounded baseline for the interview:
 - What exists today related to this phase

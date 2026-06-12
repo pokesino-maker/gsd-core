@@ -1,7 +1,7 @@
 ---
 name: gsd-doc-writer
 description: Writes and updates project documentation. Spawned with a doc_assignment block specifying doc type, mode (create/update/supplement), and project context.
-tools: Read, Bash, Grep, Glob, Write, Edit
+tools: Read, Bash, Grep, Glob, Write, Edit, get_architecture_overview_tool, list_communities_tool, query_graph_tool, semantic_search_nodes_tool
 color: purple
 # hooks:
 #   PostToolUse:
@@ -152,13 +152,13 @@ Fix mode must correct ONLY the lines listed in the failures array. Do not modify
   inputs and outputs, and the main architectural style (e.g., layered, event-driven, microservices).
   Discover: Read the root-level `README.md` or `package.json` description; grep for top-level export patterns.
 - Component diagram — A text-based ASCII or Mermaid diagram showing the major modules and their relationships.
-  Discover: Inspect `src/` or `lib/` top-level subdirectory names — each represents a likely component.
+  Discover: Retrieve the project's structural modules using get_architecture_overview_tool or list_communities_tool to identify components and dependencies.
   List them with arrows indicating data flow direction (A → B means A calls/sends to B).
 - Data flow — A prose description (or numbered list) of how a typical request or data item moves through the
   system from entry point to output. Discover: Grep for `app.listen`, `createServer`, main entry points,
   event emitters, or queue consumers. Follow the call chain for 2-3 levels.
 - Key abstractions — The most important interfaces, base classes, or design patterns used, with file locations.
-  Discover: Grep for `export class`, `export interface`, `export function`, `export type` in `src/` or `lib/`.
+  Discover: Inspect top-level file structures using query_graph_tool (pattern: file_summary) or list primary components with get_architecture_overview_tool to identify key abstractions.
   List the 5-10 most significant abstractions with a one-line description and file path.
 - Directory structure rationale — Explain why the project is organized the way it is. List top-level
   directories with a one-sentence description of each. Discover: Run `ls src/` or `ls lib/`; read index files
@@ -301,8 +301,7 @@ Fix mode must correct ONLY the lines listed in the failures array. Do not modify
   `apiKey`, `x-api-key` patterns in route/middleware files. Use VERIFY markers for actual key values or
   external auth service URLs.
 - Endpoints overview — A table of all HTTP endpoints with method, path, and one-line description. Discover:
-  Read files in `src/routes/`, `src/api/`, `app/api/`, `pages/api/` (Next.js), `routes/` directories.
-  Grep for `router.get|router.post|router.put|router.delete|app.get|app.post` patterns. Check for OpenAPI
+  Use semantic_search_nodes_tool (querying for route patterns, 'routes', or endpoint descriptors) to list registered routes. Check for OpenAPI
   or Swagger specs in `openapi.yaml`, `swagger.json`, `docs/openapi.*`.
 - Request/response formats — The standard request body and response envelope shape. Discover: Read TypeScript
   types or interfaces near route handlers (grep `interface.*Request|interface.*Response|type.*Payload`).
@@ -341,7 +340,7 @@ Fix mode must correct ONLY the lines listed in the failures array. Do not modify
 
 **Required Sections:**
 - Environment variables — A table listing every environment variable with name, required/optional status, and
-  description. Discover: Read `.env.example` or `.env.sample` for the canonical list. Grep for `process.env.`
+  description. Discover: Read `.env.example` or `.env.sample` for the canonical list. Use semantic_search_nodes_tool (query: "process.env")
   patterns in `src/`, `lib/`, or `config/` to find variables not in the example file. Mark variables that
   cause startup failure if missing as Required; others as Optional.
 - Config file format — If the project uses config files (JSON, YAML, TOML) beyond environment variables,

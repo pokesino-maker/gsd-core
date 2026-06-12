@@ -1,7 +1,7 @@
 ---
 name: gsd-code-reviewer
 description: Reviews source files for bugs, security issues, and code quality problems. Produces structured REVIEW.md with severity-classified findings. Spawned by /gsd:code-review.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, detect_changes_tool, semantic_search_nodes_tool, get_review_context_tool, query_graph_tool, find_large_functions_tool, get_knowledge_gaps_tool, list_communities_tool, get_surprising_connections_tool, traverse_graph_tool
 color: orange
 # hooks:
 #   - before_write
@@ -185,38 +185,24 @@ Run grep patterns (from `<depth_levels>` quick section) against all files:
 # Hardcoded secrets
 grep -n -E "(password|secret|api_key|token|apikey|api-key)\s*[=:]\s*['\"]\w+['\"]" file
 
-# Dangerous functions
-grep -n -E "eval\(|innerHTML|dangerouslySetInnerHTML|exec\(|system\(|shell_exec" file
-
-# Debug artifacts
-grep -n -E "console\.log|debugger;|TODO|FIXME|XXX|HACK" file
-
-# Empty catch
-grep -n -E "catch\s*\([^)]*\)\s*\{\s*\}" file
+Audit changes and locate anti-patterns using detect_changes_tool and semantic_search_nodes_tool (for eval, TODOs) or get_review_context_tool, avoiding running recursive bash grep processes across the workspace.
 ```
 
 Record findings with severity: secrets/dangerous=Critical, debug=Info, empty catch=Warning
 
 **For depth=standard:**
 For each file:
-1. Read full content
-2. Apply language-specific checks (from `<depth_levels>` standard section)
-3. Check for common patterns:
-   - Functions with >50 lines (code smell)
-   - Deep nesting (>4 levels)
-   - Missing error handling in async functions
-   - Hardcoded configuration values
-   - Type safety issues (TS `any`, loose Python typing)
+1. Inspect file signatures and metadata using query_graph_tool (pattern: file_summary)
+2. Detect oversized functions (>50 lines) using find_large_functions_tool
+3. Identify error handling or structural gaps using get_knowledge_gaps_tool
 
 Record findings with file path, line number, description
 
 **For depth=deep:**
 All of standard, plus:
-1. **Build import graph:** Parse imports/exports across all reviewed files
-2. **Trace call chains:** For each public function, trace callers across modules
-3. **Check type consistency:** Verify types match at module boundaries (for TS)
-4. **Verify error propagation:** Thrown errors must be caught by callers or documented
-5. **Detect state inconsistency:** Check for shared state mutations without coordination
+1. Query module import/export relations using query_graph_tool (imports_of / importers_of) and list_communities_tool
+2. Trace cross-module call paths using query_graph_tool (callers_of) or traverse_graph_tool
+3. Verify types match using query_graph_tool and catch state mutation coordination issues using get_knowledge_gaps_tool or get_surprising_connections_tool
 
 Record cross-file issues with all affected file paths
 </step>

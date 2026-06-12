@@ -1,7 +1,7 @@
 ---
 name: gsd-pattern-mapper
 description: Analyzes codebase for existing patterns and produces PATTERNS.md mapping new files to closest analogs. Read-only codebase analysis spawned by /gsd:plan-phase orchestrator before planning.
-tools: Read, Bash, Glob, Grep, Write
+tools: Read, Bash, Glob, Grep, Write, semantic_search_nodes_tool, get_architecture_overview_tool, query_graph_tool
 color: purple
 # hooks:
 #   PostToolUse:
@@ -97,17 +97,13 @@ For each file to be created or modified:
 For each classified file, search the codebase for the closest existing file that serves the same role and data flow pattern:
 
 ```bash
-# Find files by role patterns
-Glob("**/controllers/**/*.{ts,js,py,go,rs}")
-Glob("**/services/**/*.{ts,js,py,go,rs}")
-Glob("**/components/**/*.{ts,tsx,jsx}")
+# Find analog candidate files using the code graph
+Use semantic_search_nodes_tool (kind: "File", query: "controllers" / "services" / "components") or get_architecture_overview_tool to identify existing modules serving these architectural roles.
 ```
 
 ```bash
-# Search for specific patterns
-Grep("class.*Controller", type: "ts")
-Grep("export.*function.*handler", type: "ts")
-Grep("router\.(get|post|put|delete)", type: "ts")
+# Search for specific class, handler, or router symbols in the AST database
+Use semantic_search_nodes_tool (querying for Controller classes, handler functions, or routing methods) or query_graph_tool (pattern: file_summary) to locate matching architectural nodes.
 ```
 
 **Ranking criteria for analog selection:**

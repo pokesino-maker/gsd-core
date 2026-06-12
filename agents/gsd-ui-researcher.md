@@ -1,7 +1,7 @@
 ---
 name: gsd-ui-researcher
 description: Produces UI-SPEC.md design contract for frontend phases. Reads upstream artifacts, detects design system state, asks only unanswered questions. Spawned by /gsd:ui-phase orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*, mcp__tavily__*, mcp__ref__*, mcp__jina__*
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch, mcp__context7__*, mcp__firecrawl__*, mcp__exa__*, mcp__tavily__*, mcp__ref__*, mcp__jina__*, semantic_search_nodes_tool, query_graph_tool
 color: purple
 # hooks:
 #   PostToolUse:
@@ -108,8 +108,8 @@ ls components.json tailwind.config.* postcss.config.* 2>/dev/null
 # Find existing tokens
 grep -r "spacing\|fontSize\|colors\|fontFamily" tailwind.config.* 2>/dev/null
 
-# Find existing components
-find src -name "*.tsx" -path "*/components/*" 2>/dev/null | head -20
+# Find existing components using the code graph
+Use semantic_search_nodes_tool (kind: "File", query: "components") or query_graph_tool (pattern: file_summary) to identify active component nodes and styles.
 
 # Check for shadcn
 test -f components.json && npx shadcn info 2>/dev/null

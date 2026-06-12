@@ -1,7 +1,7 @@
 ---
 name: gsd-eval-auditor
 description: Retroactive audit of an implemented AI phase's evaluation coverage. Checks implementation against the AI-SPEC.md evaluation plan. Scores each eval dimension as COVERED/PARTIAL/MISSING. Produces a scored EVAL-REVIEW.md with findings, gaps, and remediation guidance. Spawned by /gsd:eval-review orchestrator.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, semantic_search_nodes_tool, query_graph_tool
 color: red
 # hooks:
 #   PostToolUse:
@@ -65,25 +65,10 @@ Extract from AI-SPEC.md: planned eval dimensions with rubrics, eval tooling, dat
 
 <step name="scan_codebase">
 ```bash
-# Eval/test files
-find . \( -name "*.test.*" -o -name "*.spec.*" -o -name "test_*" -o -name "eval_*" \) \
-  -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | head -40
-
-# Tracing/observability setup
-grep -r "langfuse\|langsmith\|arize\|phoenix\|braintrust\|promptfoo" \
-  --include="*.py" --include="*.ts" --include="*.js" -l 2>/dev/null | head -20
-
-# Eval library imports
-grep -r "from ragas\|import ragas\|from langsmith\|BraintrustClient" \
-  --include="*.py" --include="*.ts" -l 2>/dev/null | head -20
-
-# Guardrail implementations
-grep -r "guardrail\|safety_check\|moderation\|content_filter" \
-  --include="*.py" --include="*.ts" --include="*.js" -l 2>/dev/null | head -20
-
-# Eval config files and reference dataset
-find . \( -name "promptfoo.yaml" -o -name "eval.config.*" -o -name "*.jsonl" -o -name "evals*.json" \) \
-  -not -path "*/node_modules/*" 2>/dev/null | head -10
+- Search for evaluation and test files using semantic_search_nodes_tool (kind: "Test" or query: "test" / "eval").
+- Search for tracing, observability, and evaluation imports (e.g., langfuse, langsmith, braintrust, ragas) using semantic_search_nodes_tool or query_graph_tool.
+- Locate guardrail functions and modules (safety_check, moderation, guardrail) using semantic_search_nodes_tool.
+- Locate evaluation configuration files (e.g., promptfoo.yaml, eval.config.*) using semantic_search_nodes_tool (kind: "File", query: "config").
 ```
 </step>
 

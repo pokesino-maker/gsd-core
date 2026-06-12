@@ -60,8 +60,7 @@ State A: Parse from existing VALIDATION.md Test Infrastructure table.
 State B: Filesystem scan:
 
 ```bash
-find . -name "pytest.ini" -o -name "jest.config.*" -o -name "vitest.config.*" -o -name "pyproject.toml" 2>/dev/null | head -10
-find . \( -name "*.test.*" -o -name "*.spec.*" -o -name "test_*" \) -not -path "*/node_modules/*" 2>/dev/null | head -40
+Use semantic_search_nodes_tool (query: "pytest.ini", "jest.config", "test", "spec") to find test infrastructure and test files pre-indexed in the AST code graph.
 ```
 
 ### 2d. Cross-Reference

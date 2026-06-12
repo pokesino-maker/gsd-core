@@ -215,13 +215,9 @@ ls .planning/codebase/*.md 2>/dev/null || true
 
 **If codebase maps exist:** Read relevant ones (CONVENTIONS.md, STRUCTURE.md, STACK.md). Extract reusable components, patterns, integration points. Skip to Step 3.
 
-**Step 2: If no codebase maps, do targeted grep**
+**Step 2: If no codebase maps, do targeted semantic search**
 
-Extract key terms from phase goal, search for related files.
-
-```bash
-grep -rl "{term1}\|{term2}" src/ app/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -10
-```
+Use semantic_search_nodes_tool with queries based on phase goal key terms to find related classes, functions, or files in the code graph.
 
 Read the 3-5 most relevant files.
 

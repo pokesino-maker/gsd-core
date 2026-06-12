@@ -1,7 +1,7 @@
 ---
 name: gsd-doc-verifier
 description: Verifies factual claims in generated docs against the live codebase. Returns structured JSON per doc.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, semantic_search_nodes_tool, query_graph_tool
 color: orange
 # hooks:
 #   PostToolUse:
@@ -81,14 +81,14 @@ Patterns like `GET /api/...`, `POST /api/...`, etc. in both prose and code block
 
 Detection pattern: `(GET|POST|PUT|DELETE|PATCH)\s+/[a-zA-Z0-9/_:-]+`
 
-Verification: grep for the endpoint path in source directories (`src/`, `routes/`, `api/`, `server/`, `app/`). Use patterns like `router\.(get|post|put|delete|patch)` and `app\.(get|post|put|delete|patch)`. PASS if found in any source file. FAIL with `{ ..., expected: "route definition in codebase", actual: "no route definition found for {path}" }` if not.
+Verification: Search for the endpoint pattern or route definitions in the AST graph database using semantic_search_nodes_tool. PASS if found in any source node. FAIL with `{ ..., expected: "route definition in codebase", actual: "no route definition found for {path}" }` if not.
 
 **4. Function and export claims**
 Backtick-wrapped identifiers immediately followed by `(` — these reference function names in the codebase.
 
 Detection: inline code spans matching `[a-zA-Z_][a-zA-Z0-9_]*\(`.
 
-Verification: grep for the function name in source files (`src/`, `lib/`, `bin/`). Accept matches for `function <name>`, `const <name> =`, `<name>(`, or `export.*<name>`. PASS if any match found. FAIL with `{ ..., expected: "function '<name>' in codebase", actual: "no definition found" }` if not.
+Verification: Query the code graph using semantic_search_nodes_tool (query: `<name>`) to locate the function definition node, or use query_graph_tool (pattern: file_summary) on relevant modules. PASS if the symbol node is found. FAIL with `{ ..., expected: "function '<name>' in codebase", actual: "no definition found" }` if not.
 
 **5. Dependency claims**
 Package names mentioned in prose as used dependencies (e.g., "uses `express`" or "`lodash` for utilities"). These are backtick-wrapped names that appear in dependency context phrases: "uses", "requires", "depends on", "powered by", "built with".

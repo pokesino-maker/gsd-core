@@ -145,10 +145,8 @@ If user selects "Cancel": exit gracefully.
 Before generating the test plan, discover the project's existing test structure:
 
 ```bash
-# Find existing test directories
-find . -type d -name "*test*" -o -name "*spec*" -o -name "*__tests__*" 2>/dev/null | head -20
-# Find existing test files for convention matching
-find . -type f \( -name "*.test.*" -o -name "*.spec.*" -o -name "*Tests.fs" -o -name "*Test.fs" \) 2>/dev/null | head -20
+# Locate test directories and files using the code graph
+Use semantic_search_nodes_tool (kind: "Test" or query: "test" / "spec") to identify existing test locations and naming patterns.
 # Check for test runners
 ls package.json *.sln 2>/dev/null || true
 ```

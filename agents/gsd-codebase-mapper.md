@@ -1,7 +1,7 @@
 ---
 name: gsd-codebase-mapper
 description: Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load.
-tools: Read, Bash, Grep, Glob, Write
+tools: Read, Bash, Grep, Glob, Write, query_graph_tool, list_communities_tool, get_architecture_overview_tool, semantic_search_nodes_tool, find_large_functions_tool, get_knowledge_gaps_tool
 color: cyan
 # hooks:
 #   PostToolUse:
@@ -123,19 +123,19 @@ ls -la *.config.* tsconfig.json .nvmrc .python-version 2>/dev/null
 ls .env* 2>/dev/null  # Note existence only, never read contents
 
 # Find SDK/API imports
-grep -r "import.*stripe\|import.*supabase\|import.*aws\|import.*@" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -50
+Query target imports across the AST nodes using query_graph_tool (pattern: imports_of) with external libraries names (stripe, supabase, aws, etc.) to get direct dependency listings.
 ```
 
 **For arch focus:**
 ```bash
 # Directory structure
-find . -type d -not -path '*/node_modules/*' -not -path '*/.git/*' | head -50
+Use list_communities_tool or get_architecture_overview_tool to get logical modular structure.
 
 # Entry points
-ls src/index.* src/main.* src/app.* src/server.* app/page.* 2>/dev/null
+Use semantic_search_nodes_tool (kind: "File", query: "index" or "main") to identify application entrypoints.
 
 # Import patterns to understand layers
-grep -r "^import" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -100
+Use get_architecture_overview_tool or query_graph_tool (pattern: file_summary) to examine architecture layers.
 ```
 
 **For quality focus:**
@@ -145,8 +145,7 @@ ls .eslintrc* .prettierrc* eslint.config.* biome.json 2>/dev/null
 cat .prettierrc 2>/dev/null
 
 # Test files and config
-ls jest.config.* vitest.config.* 2>/dev/null
-find . -name "*.test.*" -o -name "*.spec.*" | head -30
+Use semantic_search_nodes_tool (kind: "Test", query: "*") to list all unit and integration tests mapped by AST.
 
 # Sample source files for convention analysis
 ls src/**/*.ts 2>/dev/null | head -10
@@ -155,13 +154,13 @@ ls src/**/*.ts 2>/dev/null | head -10
 **For concerns focus:**
 ```bash
 # TODO/FIXME comments
-grep -rn "TODO\|FIXME\|HACK\|XXX" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -50
+Use semantic_search_nodes_tool (query: "TODO") or get_knowledge_gaps_tool.
 
 # Large files (potential complexity)
-find src/ -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | sort -rn | head -20
+Use find_large_functions_tool (specifying a line threshold) to identify oversized logical modules.
 
 # Empty returns/stubs
-grep -rn "return null\|return \[\]\|return {}" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | head -30
+Use semantic_search_nodes_tool (query: "return null") or get_knowledge_gaps_tool.
 ```
 
 Read key files identified during exploration. Use Glob and Grep liberally.

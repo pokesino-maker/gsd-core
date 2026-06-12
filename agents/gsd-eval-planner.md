@@ -1,7 +1,7 @@
 ---
 name: gsd-eval-planner
 description: Designs a structured evaluation strategy for an AI phase. Identifies critical failure modes, selects eval dimensions with rubrics, recommends tooling, and specifies the reference dataset. Writes the Evaluation Strategy, Guardrails, and Production Monitoring sections of AI-SPEC.md. Spawned by /gsd:ai-integration-phase orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion
+tools: Read, Write, Edit, Bash, Grep, Glob, AskUserQuestion, semantic_search_nodes_tool, query_graph_tool
 color: orange
 # hooks:
 #   PostToolUse:
@@ -72,9 +72,7 @@ Mark each dimension with priority: Critical / High / Medium.
 <step name="select_eval_tooling">
 Detect first — scan for existing tools before defaulting:
 ```bash
-grep -r "langfuse\|langsmith\|arize\|phoenix\|braintrust\|promptfoo\|ragas" \
-  --include="*.py" --include="*.ts" --include="*.toml" --include="*.json" \
-  -l 2>/dev/null | grep -v node_modules | head -10
+Query the code graph database using semantic_search_nodes_tool or query_graph_tool (searching for frameworks like langfuse, langsmith, phoenix, braintrust, promptfoo, or ragas) to locate existing tracing configuration and dependencies.
 ```
 
 If detected: use it as the tracing default.

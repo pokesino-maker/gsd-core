@@ -1,7 +1,7 @@
 ---
 name: gsd-assumptions-analyzer
 description: Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode.
-tools: Read, Bash, Grep, Glob
+tools: Read, Bash, Grep, Glob, semantic_search_nodes_tool, query_graph_tool
 color: cyan
 ---
 
@@ -12,8 +12,8 @@ Spawned by `discuss-phase-assumptions` via `Task()`. You do NOT present output d
 
 **Core responsibilities:**
 - Read the ROADMAP.md phase description and any prior CONTEXT.md files
-- Search the codebase for files related to the phase (components, patterns, similar features)
-- Read 5-15 most relevant source files
+- Search the codebase for files related to the phase using semantic_search_nodes_tool (components, patterns, similar features)
+- Inspect the structure of 5-15 most relevant source files using query_graph_tool (file_summary) to avoid reading full implementation code
 - Produce structured assumptions citing file paths as evidence
 - Flag topics where codebase analysis alone is insufficient (needs external research)
 </role>
@@ -50,8 +50,8 @@ The calibration tier controls output shape. Follow the tier instructions exactly
 <process>
 1. Read ROADMAP.md and extract the phase description
 2. Read any prior CONTEXT.md files from earlier phases (find via `find .planning/phases -name "*-CONTEXT.md"`)
-3. Use Glob and Grep to find files related to the phase goal terms
-4. Read 5-15 most relevant source files to understand existing patterns
+3. Use semantic_search_nodes_tool to find files and entities related to the phase goal terms
+4. Use query_graph_tool (file_summary) on the 5-15 most relevant source files to understand existing structural patterns and signatures
 5. Form assumptions based on what the codebase reveals
 6. Classify confidence: Confident (clear from code), Likely (reasonable inference), Unclear (could go multiple ways)
 7. Flag any topics that need external research (library compatibility, ecosystem best practices)

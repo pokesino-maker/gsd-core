@@ -122,8 +122,7 @@ Parse JSON result: `{ all_passed, passed, total, artifacts: [{path, exists, issu
 
 **Level 3 — Wired (manual check for artifacts that pass Levels 1-2):**
 ```bash
-grep -r "import.*$artifact_name" src/ --include="*.ts" --include="*.tsx"  # IMPORTED
-grep -r "$artifact_name" src/ --include="*.ts" --include="*.tsx" | grep -v "import"  # USED
+Use traverse_graph_tool or query_graph_tool to search for dependencies and imports of the artifact node. You can also use get_impact_radius_tool to find files depending on it.
 ```
 WIRED = imported AND used. ORPHANED = exists but not imported/used.
 

@@ -38,9 +38,10 @@ Group items by what's actionable NOW vs. what needs prerequisites:
 - `build_needed` — needs release/preview build
 - `third_party` — needs external service configuration
 
-For each item in "Testable Now", use Grep/Read to check if the underlying feature still exists in the codebase:
-- If the test references a component/function that no longer exists → mark as `stale`
-- If the test references code that has been significantly rewritten → mark as `needs_update`
+For each item in "Testable Now", check if the underlying feature still exists in the codebase using code-review-graph tools:
+- Use semantic_search_nodes_tool or query_graph_tool to search for the referenced component, class, or function symbol.
+- If no matching nodes are found in the AST graph → mark as `stale`
+- If the symbol is found, inspect its node metadata to verify if it has been updated or matches expectations → mark as `active` or `needs_update`
 - Otherwise → mark as `active`
 </step>
 

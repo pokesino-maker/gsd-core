@@ -293,7 +293,7 @@ Continue to verify_output.
 <step name="sequential_mapping" condition="Agent tool is NOT available (e.g. Antigravity, Gemini CLI, Codex)">
 When the `Agent` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.
 
-**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, list_dir, view_file, grep_search, or equivalent tools available in your runtime).
+**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Instead of generic codebase searches (Grep/Glob/Read), use code-review-graph tools (e.g., query_graph_tool, traverse_graph_tool, semantic_search_nodes_tool) to query the pre-indexed AST graph for architecture, structure, and quality conventions. Use local filesystem tools only to read specific package config files (like package.json, Cargo.toml) or specific code samples.
 
 **IMPORTANT:** Use `{date}` from init context for all `[YYYY-MM-DD]` date placeholders in documents. NEVER guess the date.
 

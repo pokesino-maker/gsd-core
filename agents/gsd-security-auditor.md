@@ -1,7 +1,7 @@
 ---
 name: gsd-security-auditor
 description: Verifies threat mitigations from PLAN.md threat model exist in implemented code. Produces SECURITY.md. Spawned by /gsd:secure-phase.
-tools:
+tools: semantic_search_nodes_tool
   - Read
   - Write
   - Edit
@@ -63,7 +63,7 @@ For each threat in `<threat_model>`, determine verification method by dispositio
 
 | Disposition | Verification Method |
 |-------------|---------------------|
-| `mitigate` | Grep for mitigation pattern in files cited in mitigation plan |
+| `mitigate` | Use semantic_search_nodes_tool to verify the presence of the mitigation pattern (e.g., security check, validator) within the cited code symbols |
 | `accept` | Verify entry present in SECURITY.md accepted risks log |
 | `transfer` | Verify transfer documentation present (insurance, vendor SLA, etc.) |
 

@@ -120,8 +120,8 @@ KEYWORD="${KEYWORD:-seed}"  # fallback to literal "seed" if extraction yields no
 ```
 
 ```bash
-# Find files related to the idea keywords ($KEYWORD derived from $IDEA)
-grep -rl "$KEYWORD" --include="*.ts" --include="*.js" --include="*.md" . 2>/dev/null | head -10
+# Locate files related to the seed keyword using semantic code graph search
+Use semantic_search_nodes_tool (query: "$KEYWORD") to locate classes, functions, or files relevant to the seed idea.
 ```
 
 Also check:

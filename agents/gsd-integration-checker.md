@@ -1,7 +1,7 @@
 ---
 name: gsd-integration-checker
 description: Verifies cross-phase integration and E2E flows. Checks that phases connect properly and user workflows complete end-to-end.
-tools: Read, Bash, Grep, Glob
+tools: Read, Bash, Grep, Glob, query_graph_tool, semantic_search_nodes_tool, traverse_graph_tool
 color: blue
 ---
 
@@ -122,29 +122,8 @@ For each phase's exports, verify they're imported and used.
 **Check imports:**
 
 ```bash
-check_export_used() {
-  local export_name="$1"
-  local source_phase="$2"
-  local search_path="${3:-src/}"
-
-  # Find imports
-  local imports=$(grep -r "import.*$export_name" "$search_path" \
-    --include="*.ts" --include="*.tsx" 2>/dev/null | \
-    grep -v "$source_phase" | wc -l)
-
-  # Find usage (not just import)
-  local uses=$(grep -r "$export_name" "$search_path" \
-    --include="*.ts" --include="*.tsx" 2>/dev/null | \
-    grep -v "import" | grep -v "$source_phase" | wc -l)
-
-  if [ "$imports" -gt 0 ] && [ "$uses" -gt 0 ]; then
-    echo "CONNECTED ($imports imports, $uses uses)"
-  elif [ "$imports" -gt 0 ]; then
-    echo "IMPORTED_NOT_USED ($imports imports, 0 uses)"
-  else
-    echo "ORPHANED (0 imports)"
-  fi
-}
+# Verify export usage using the AST graph database
+Use query_graph_tool (pattern: importers_of with the export name) to find all importing files, and query_graph_tool (pattern: callers_of with the export name) to identify actual call sites across the codebase.
 ```
 
 **Run for key exports:**
@@ -186,8 +165,7 @@ check_api_consumed() {
   local fetches=$(grep -r "fetch.*['\"]$route\|axios.*['\"]$route" "$search_path" \
     --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l)
 
-  # Also check for dynamic routes (replace [id] with pattern)
-  local dynamic_route=$(echo "$route" | sed 's/\[.*\]/.*/g')
+  Use semantic_search_nodes_tool (query: dynamic pattern or route parameters) to locate referencing nodes and dynamically generated route handlers.
   local dynamic_fetches=$(grep -r "fetch.*['\"]$dynamic_route\|axios.*['\"]$dynamic_route" "$search_path" \
     --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l)
 
@@ -324,12 +302,8 @@ verify_form_flow() {
     local has_form=$(grep -E "<form|onSubmit" "$form_file" 2>/dev/null)
     [ -n "$has_form" ] && echo "✓ Has form" || echo "✗ No form element"
 
-    # Step 2: Handler calls API
-    local calls_api=$(grep -E "fetch.*$api_route|axios.*$api_route" "$form_file" 2>/dev/null)
-    [ -n "$calls_api" ] && echo "✓ Calls API" || echo "✗ Doesn't call API"
-
-    # Step 3: Handles response
-    local handles_response=$(grep -E "\.then|await.*fetch|setError|setSuccess" "$form_file" 2>/dev/null)
+    # Verify E2E flows
+Trace caller-to-callee relationships and dynamic data flow paths across frontend and API boundary modules using traverse_graph_tool and query_graph_tool (patterns: callers_of, callees_of).
     [ -n "$handles_response" ] && echo "✓ Handles response" || echo "✗ Doesn't handle response"
 
     # Step 4: Shows feedback

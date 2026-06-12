@@ -1,7 +1,7 @@
 ---
 name: gsd-debugger
 description: Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by /gsd:debug orchestrator.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
+tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, semantic_search_nodes_tool, query_graph_tool
 color: orange
 # hooks:
 #   PostToolUse:
@@ -975,9 +975,9 @@ At investigation decision points, apply structured reasoning:
 
 **Phase 1: Initial evidence gathering**
 - Update Current Focus with "gathering initial evidence"
-- If errors exist, search codebase for error text
-- Identify relevant code area from symptoms
-- Read relevant files COMPLETELY
+- If errors exist, query the symbols database using semantic_search_nodes_tool with the error string/identifiers
+- Identify relevant code area using semantic_search_nodes_tool
+- Inspect the structure of relevant files using query_graph_tool (pattern: file_summary) to avoid reading full implementation code
 - Run app/tests to observe behavior
 - APPEND to Evidence after each finding
 

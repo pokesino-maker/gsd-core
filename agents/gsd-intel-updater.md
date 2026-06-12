@@ -1,7 +1,7 @@
 ---
 name: gsd-intel-updater
 description: Analyzes codebase and writes structured intel files to .planning/intel/.
-tools: Read, Write, Bash, Glob, Grep
+tools: Read, Write, Bash, Glob, Grep, query_graph_tool, get_architecture_overview_tool, semantic_search_nodes_tool
 color: cyan
 # hooks:
 ---
@@ -218,8 +218,7 @@ gsd_run intel patch-meta .planning/intel/stack.json
 
 ### Step 3: File Graph
 
-Glob source files (`**/*.ts`, `**/*.js`, `**/*.py`, etc., excluding node_modules/dist/build).
-Read key files (entry points, configs, core modules) for imports/exports.
+To populate imports and exports in file-roles.json, query the structural module signatures from the AST database using query_graph_tool (pattern: file_summary) or get_architecture_overview_tool.
 Write `file-roles.json`. Then patch its timestamp:
 ```bash
 gsd_run intel patch-meta .planning/intel/file-roles.json 
@@ -229,8 +228,7 @@ Focus on files that matter -- entry points, core modules, configs. Skip test fil
 
 ### Step 4: API Surface
 
-Grep for route definitions, endpoint declarations, CLI command registrations.
-Patterns to search: `app.get(`, `router.post(`, `@GetMapping`, `def route`, express route patterns.
+Query endpoint nodes and registered paths using semantic_search_nodes_tool (filtering by route keywords or Kind: "File").
 Write `api-map.json`. If no API endpoints found, write an empty entries object. Then patch its timestamp:
 ```bash
 gsd_run intel patch-meta .planning/intel/api-map.json 

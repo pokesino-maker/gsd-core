@@ -1,7 +1,7 @@
 ---
 name: gsd-ui-auditor
 description: Retroactive 6-pillar visual audit of implemented frontend code. Produces scored UI-REVIEW.md. Spawned by /gsd:ui-review orchestrator.
-tools: Read, Write, Bash, Grep, Glob
+tools: Read, Write, Bash, Grep, Glob, semantic_search_nodes_tool, query_graph_tool
 color: pink
 # hooks:
 #   PostToolUse:
@@ -196,12 +196,8 @@ Try port 3000 first, then 5173 (Vite default), then 8080.
 **Audit method:** Grep for string literals, check component text content.
 
 ```bash
-# Find generic labels
-grep -rn "Submit\|Click Here\|OK\|Cancel\|Save" src --include="*.tsx" --include="*.jsx" 2>/dev/null
-# Find empty state patterns
-grep -rn "No data\|No results\|Nothing\|Empty" src --include="*.tsx" --include="*.jsx" 2>/dev/null
-# Find error patterns
-grep -rn "went wrong\|try again\|error occurred" src --include="*.tsx" --include="*.jsx" 2>/dev/null
+# Find copywriting labels, empty state and error text patterns using semantic_search_nodes_tool
+Use semantic_search_nodes_tool (querying for copy string literals or FTS text matches such as "Submit", "empty state", "error occurred" directly in the graph)
 ```
 
 **If UI-SPEC exists:** Compare each declared CTA/empty/error copy against actual strings.
@@ -262,12 +258,7 @@ grep -rn "\[.*px\]\|\[.*rem\]" src --include="*.tsx" --include="*.jsx" 2>/dev/nu
 **Audit method:** Check for state coverage and interaction patterns.
 
 ```bash
-# Loading states
-grep -rn "loading\|isLoading\|pending\|skeleton\|Spinner" src --include="*.tsx" --include="*.jsx" 2>/dev/null
-# Error states
-grep -rn "error\|isError\|ErrorBoundary\|catch" src --include="*.tsx" --include="*.jsx" 2>/dev/null
-# Empty states
-grep -rn "empty\|isEmpty\|no.*found\|length === 0" src --include="*.tsx" --include="*.jsx" 2>/dev/null
+Use semantic_search_nodes_tool to query for experience states (loading, error, empty) in the codebase. Use query_graph_tool (pattern: file_summary) to examine state structures and component layouts.
 ```
 
 Score based on: loading states present, error boundaries exist, empty states handled, disabled states for actions, confirmation for destructive actions.
