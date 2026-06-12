@@ -50,7 +50,9 @@ const HOOKS_TO_COPY = [
   'gsd-phase-boundary.sh',
   // Graphify auto-update hook (#3347 / PR #3557 / #3579). Opt-in via
   // .planning/config.json graphify.auto_update; off by default.
-  'gsd-graphify-update.sh'
+  'gsd-graphify-update.sh',
+  // Local Git post-commit hook for code-review-graph and graphify updates
+  'gsd-post-commit.sh'
 ];
 
 // Subdirectories under hooks/ whose contents must also ship to dist. Each

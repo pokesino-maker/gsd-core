@@ -7817,6 +7817,7 @@ const GSD_UNINSTALL_HOOKS = [
   'gsd-validate-commit.sh',
   'gsd-phase-boundary.sh',
   'gsd-graphify-update.sh',
+  'gsd-post-commit.sh',
 ];
 
 /**
@@ -10291,7 +10292,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       if (verifyInstalled(hooksDest, 'hooks')) {
         console.log(`  ${green}✓${reset} Installed hooks (bundled)`);
         // Warn if expected community .sh hooks are missing (non-fatal)
-        const expectedShHooks = ['gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh', 'gsd-graphify-update.sh'];
+        const expectedShHooks = ['gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh', 'gsd-graphify-update.sh', 'gsd-post-commit.sh'];
         for (const sh of expectedShHooks) {
           if (!fs.existsSync(path.join(hooksDest, sh))) {
             console.warn(`  ${yellow}⚠${reset}  Missing expected hook: ${sh}`);
@@ -10299,6 +10300,37 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         }
       } else {
         failures.push('hooks');
+      }
+    }
+  }
+
+  // Install local Git post-commit hook for code-review-graph and graphify (if local install inside a git repo)
+  if (!isGlobal) {
+    const gitHooksDir = path.join(path.resolve(targetDir, '..'), '.git', 'hooks');
+    if (fs.existsSync(gitHooksDir)) {
+      const postCommitDest = path.join(gitHooksDir, 'post-commit');
+      const hookSrcFile = path.join(src, 'hooks', 'dist', 'gsd-post-commit.sh');
+      if (fs.existsSync(hookSrcFile)) {
+        let shouldWrite = true;
+        if (fs.existsSync(postCommitDest)) {
+          const existingContent = fs.readFileSync(postCommitDest, 'utf8');
+          if (existingContent.includes('code-review-graph update') || existingContent.includes('graphify-rebuild')) {
+            shouldWrite = false; // ya está instalado
+          } else {
+            // Anexar la lógica al final del post-commit existente
+            const postCommitCode = fs.readFileSync(hookSrcFile, 'utf8');
+            // Quitar shebang si ya existe
+            const codeWithoutShebang = postCommitCode.replace(/^#!\/.*$/, '');
+            fs.appendFileSync(postCommitDest, '\n\n# --- GSD Code-Review-Graph & Graphify Rebuild integration ---\n' + codeWithoutShebang);
+            shouldWrite = false;
+            console.log(`  ${green}✓${reset} Appended GSD code-review-graph to local Git post-commit hook`);
+          }
+        }
+        if (shouldWrite) {
+          fs.copyFileSync(hookSrcFile, postCommitDest);
+          try { fs.chmodSync(postCommitDest, 0o755); } catch (_) {}
+          console.log(`  ${green}✓${reset} Installed local Git post-commit hook for code-review-graph`);
+        }
       }
     }
   }
@@ -11087,6 +11119,18 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       settings.experimental.enableAgents = true;
       console.log(`  ${green}✓${reset} Enabled experimental agents`);
     }
+  }
+
+  // Register code-review-graph MCP server in settings.local.json (requires 'uv' or 'pip install code-review-graph')
+  if (!settings.mcpServers) {
+    settings.mcpServers = {};
+  }
+  if (!settings.mcpServers['code-review-graph']) {
+    settings.mcpServers['code-review-graph'] = {
+      command: 'uvx',
+      args: ['code-review-graph']
+    };
+    console.log(`  ${green}✓${reset} Configured code-review-graph MCP server in settings.local.json`);
   }
 
   // Helper: detect whether a hook entry references a managed hook by name.

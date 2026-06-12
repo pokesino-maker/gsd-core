@@ -39,8 +39,28 @@ Each milestone repeats the same five-step loop, one phase at a time:
 
 ## Quickstart
 
+### Official Version
 ```bash
 npx @opengsd/gsd-core@latest
+```
+
+### Fork Version (pokesino-maker)
+If you wish to use this optimized fork with `code-review-graph` improvements, you can run:
+```bash
+npx @pokesino-maker/gsd-core@latest
+```
+
+### Local Development / Fork Customization
+If you cloned this repository locally to modify or test your own changes:
+```bash
+# 1. Install dependencies and compile TypeScript
+npm install
+
+# 2. Link the package globally
+npm link
+
+# 3. Initialize GSD Core global installation (e.g. for Gemini)
+gsd-core --gemini --global
 ```
 
 The installer prompts for your runtime (Claude Code, OpenCode, Gemini CLI, Kimi CLI, Kilo, Codex, Copilot, Cursor, Windsurf, and more) and whether to install globally or locally. The installer is required for cross-runtime compatibility — do not copy files from `agents/` or `commands/` directly.
