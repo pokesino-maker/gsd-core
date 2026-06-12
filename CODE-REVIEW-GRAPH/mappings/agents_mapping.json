@@ -1,0 +1,526 @@
+[
+  {
+    "file_path": "agents/gsd-assumptions-analyzer.md",
+    "line_range": "15-16",
+    "original_tools": [
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces full codebase glob/grep text searches and reading 5-15 complete source files with semantic entity queries and structured summaries of code symbols, saving thousands of context tokens.",
+    "original_text": "- Search the codebase for files related to the phase (components, patterns, similar features)\n- Read 5-15 most relevant source files",
+    "graph_text": "- Search the codebase for files related to the phase using semantic_search_nodes_tool (components, patterns, similar features)\n- Inspect the structure of 5-15 most relevant source files using query_graph_tool (file_summary) to avoid reading full implementation code"
+  },
+  {
+    "file_path": "agents/gsd-assumptions-analyzer.md",
+    "line_range": "53-54",
+    "original_tools": [
+      "Glob",
+      "Grep",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids brute-force grep/glob matching across directories and reading the complete bodies of up to 15 files, replacing it with targeted semantic searches and tree-sitter based symbol summary views.",
+    "original_text": "3. Use Glob and Grep to find files related to the phase goal terms\n4. Read 5-15 most relevant source files to understand existing patterns",
+    "graph_text": "3. Use semantic_search_nodes_tool to find files and entities related to the phase goal terms\n4. Use query_graph_tool (file_summary) on the 5-15 most relevant source files to understand existing structural patterns and signatures"
+  },
+  {
+    "file_path": "agents/gsd-code-reviewer.md",
+    "line_range": "182-199",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "detect_changes_tool",
+      "semantic_search_nodes_tool",
+      "get_review_context_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces shell-based grep regex matching over all files for secrets, dangerous functions, catch blocks, and TODOs, with structural queries to the database and diff audits.",
+    "original_text": "# Dangerous functions\ngrep -n -E \"eval\\(|innerHTML|dangerouslySetInnerHTML|exec\\(|system\\(|shell_exec\" file\n\n# Debug artifacts\ngrep -n -E \"console\\.log|debugger;|TODO|FIXME|XXX|HACK\" file\n\n# Empty catch\ngrep -n -E \"catch\\s*\\([^)]*\\)\\s*\\{\\s*\\}\" file",
+    "graph_text": "Audit changes and locate anti-patterns using detect_changes_tool and semantic_search_nodes_tool (for eval, TODOs) or get_review_context_tool, avoiding running recursive bash grep processes across the workspace."
+  },
+  {
+    "file_path": "agents/gsd-code-reviewer.md",
+    "line_range": "201-210",
+    "original_tools": [
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "find_large_functions_tool",
+      "get_knowledge_gaps_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces full file reads to discover code structure and function sizes by querying the AST structural metadata and line length metrics directly via the graph.",
+    "original_text": "For each file:\n1. Read full content\n2. Apply language-specific checks (from `<depth_levels>` standard section)\n3. Check for common patterns:\n   - Functions with >50 lines (code smell)\n   - Deep nesting (>4 levels)\n   - Missing error handling in async functions\n   - Hardcoded configuration values\n   - Type safety issues (TS `any`, loose Python typing)",
+    "graph_text": "For each file:\n1. Inspect file signatures and metadata using query_graph_tool (pattern: file_summary)\n2. Detect oversized functions (>50 lines) using find_large_functions_tool\n3. Identify error handling or structural gaps using get_knowledge_gaps_tool"
+  },
+  {
+    "file_path": "agents/gsd-code-reviewer.md",
+    "line_range": "213-222",
+    "original_tools": [
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "list_communities_tool",
+      "get_knowledge_gaps_tool",
+      "get_surprising_connections_tool",
+      "traverse_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Delegates cross-file import graph construction, call chain tracing, circular dependency detection, and architectural coupling analysis to native graph queries, avoiding massive multi-file read tokens.",
+    "original_text": "All of standard, plus:\n1. **Build import graph:** Parse imports/exports across all reviewed files\n2. **Trace call chains:** For each public function, trace callers across modules\n3. **Check type consistency:** Verify types match at module boundaries (for TS)\n4. **Verify error propagation:** Thrown errors must be caught by callers or documented\n5. **Detect state inconsistency:** Check for shared state mutations without coordination",
+    "graph_text": "All of standard, plus:\n1. Query module import/export relations using query_graph_tool (imports_of / importers_of) and list_communities_tool\n2. Trace cross-module call paths using query_graph_tool (callers_of) or traverse_graph_tool\n3. Verify types match using query_graph_tool and catch state mutation coordination issues using get_knowledge_gaps_tool or get_surprising_connections_tool"
+  },
+  {
+    "file_path": "agents/gsd-codebase-mapper.md",
+    "line_range": "125-127",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids recursive grep search over all source files to identify external SDK dependencies by querying directly the imports of files mapped in the AST graph database.",
+    "original_text": "# Find SDK/API imports\ngrep -r \"import.*stripe\\|import.*supabase\\|import.*aws\\|import.*@\" src/ --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -50",
+    "graph_text": "# Find SDK/API imports\nQuery target imports across the AST nodes using query_graph_tool (pattern: imports_of) with external libraries names (stripe, supabase, aws, etc.) to get direct dependency listings."
+  },
+  {
+    "file_path": "agents/gsd-codebase-mapper.md",
+    "line_range": "131-138",
+    "original_tools": [
+      "Bash",
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "list_communities_tool",
+      "get_architecture_overview_tool",
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces terminal execution of raw find, ls, and grep processes with Leiden-based communities analysis, semantic entrypoint lookups, and structured dependency mapping.",
+    "original_text": "# Directory structure\nfind . -type d -not -path '*/node_modules/*' -not -path '*/.git/*' | head -50\n\n# Entry points\nls src/index.* src/main.* src/app.* src/server.* app/page.* 2>/dev/null\n\n# Import patterns to understand layers\ngrep -r \"^import\" src/ --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -100",
+    "graph_text": "# Directory structure\nUse list_communities_tool or get_architecture_overview_tool to get logical modular structure.\n\n# Entry points\nUse semantic_search_nodes_tool (kind: \"File\", query: \"index\" or \"main\") to identify application entrypoints.\n\n# Import patterns to understand layers\nUse get_architecture_overview_tool or query_graph_tool (pattern: file_summary) to examine architecture layers."
+  },
+  {
+    "file_path": "agents/gsd-codebase-mapper.md",
+    "line_range": "148-149",
+    "original_tools": [
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Avoids listing test files recursively in disk by querying for 'Test' nodes directly from the graph database.",
+    "original_text": "# Test files and config\nls jest.config.* vitest.config.* 2>/dev/null\nfind . -name \"*.test.*\" -o -name \"*.spec.*\" | head -30",
+    "graph_text": "# Test files and config\nUse semantic_search_nodes_tool (kind: \"Test\", query: \"*\") to list all unit and integration tests mapped by AST."
+  },
+  {
+    "file_path": "agents/gsd-codebase-mapper.md",
+    "line_range": "157-165",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "find_large_functions_tool",
+      "get_knowledge_gaps_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids expensive terminal operations (recursive grep of TODOs, wc -l of TypeScript files, return checks) with indexed FTS queries, line-count graph checks, and knowledge gap reports.",
+    "original_text": "# TODO/FIXME comments\ngrep -rn \"TODO\\|FIXME\\|HACK\\|XXX\" src/ --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -50\n\n# Large files (potential complexity)\nfind src/ -name \"*.ts\" -o -name \"*.tsx\" | xargs wc -l 2>/dev/null | sort -rn | head -20\n\n# Empty returns/stubs\ngrep -rn \"return null\\|return \\[\\]\\|return {}\" src/ --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -30",
+    "graph_text": "# TODO/FIXME comments\nUse semantic_search_nodes_tool (query: \"TODO\") or get_knowledge_gaps_tool.\n\n# Large files (potential complexity)\nUse find_large_functions_tool (specifying a line threshold) to identify oversized logical modules.\n\n# Empty returns/stubs\nUse semantic_search_nodes_tool (query: \"return null\") or get_knowledge_gaps_tool."
+  },
+  {
+    "file_path": "agents/gsd-debugger.md",
+    "line_range": "978-980",
+    "original_tools": [
+      "Grep",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces recursive grep searches for error strings across all source files and reading whole candidate files with indexed semantic entity searches and structural node summaries.",
+    "original_text": "- If errors exist, search codebase for error text\n- Identify relevant code area from symptoms\n- Read relevant files COMPLETELY",
+    "graph_text": "- If errors exist, query the symbols database using semantic_search_nodes_tool with the error string/identifiers\n- Identify relevant code area using semantic_search_nodes_tool\n- Inspect the structure of relevant files using query_graph_tool (pattern: file_summary) to avoid reading full implementation code"
+  },
+  {
+    "file_path": "agents/gsd-doc-verifier.md",
+    "line_range": "79-84",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces recursive grep scanning of source directories for API routes with semantic searches in the code graph database.",
+    "original_text": "Verification: grep for the endpoint path in source directories (`src/`, `routes/`, `api/`, `server/`, `app/`). Use patterns like `router\\.(get|post|put|delete|patch)` and `app\\.(get|post|put|delete|patch)`. PASS if found in any source file.",
+    "graph_text": "Verification: Search for the endpoint pattern or route definitions in the AST graph database using semantic_search_nodes_tool. PASS if found in any source node."
+  },
+  {
+    "file_path": "agents/gsd-doc-verifier.md",
+    "line_range": "86-91",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces brute-force grep matching for function definitions and export patterns across source directories with AST symbol index lookups.",
+    "original_text": "Verification: grep for the function name in source files (`src/`, `lib/`, `bin/`). Accept matches for `function <name>`, `const <name> =`, `<name>(`, or `export.*<name>`. PASS if any match found.",
+    "graph_text": "Verification: Query the code graph using semantic_search_nodes_tool (query: `<name>`) to locate the function definition node, or use query_graph_tool (pattern: file_summary) on relevant modules. PASS if the symbol node is found."
+  },
+  {
+    "file_path": "agents/gsd-doc-writer.md",
+    "line_range": "153-156",
+    "original_tools": [
+      "Glob",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "get_architecture_overview_tool",
+      "list_communities_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids manual globbing and parsing of directory names and imports to construct modular relationships. Native Leiden-based grouping and architecture overview queries provide modular graphs immediately.",
+    "original_text": "- Component diagram \u2014 A text-based ASCII or Mermaid diagram showing the major modules and their relationships.\n  Discover: Inspect `src/` or `lib/` top-level subdirectory names \u2014 each represents a likely component.\n  List them with arrows indicating data flow direction (A \u2192 B means A calls/sends to B).",
+    "graph_text": "- Component diagram \u2014 A text-based ASCII or Mermaid diagram showing the major modules and their relationships.\n  Discover: Retrieve the project's structural modules using get_architecture_overview_tool or list_communities_tool to identify components and dependencies.\n  List them with arrows indicating data flow direction (A \u2192 B means A calls/sends to B)."
+  },
+  {
+    "file_path": "agents/gsd-doc-writer.md",
+    "line_range": "160-162",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "get_architecture_overview_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces brute-force grep scanning for export signatures across the source files with AST symbol summaries.",
+    "original_text": "  Discover: Grep for `export class`, `export interface`, `export function`, `export type` in `src/` or `lib/`.\n  List the 5-10 most significant abstractions with a one-line description and file path.",
+    "graph_text": "  Discover: Inspect top-level file structures using query_graph_tool (pattern: file_summary) or list primary components with get_architecture_overview_tool to identify key abstractions.\n  List the 5-10 most significant abstractions with a one-line description and file path."
+  },
+  {
+    "file_path": "agents/gsd-doc-writer.md",
+    "line_range": "303-306",
+    "original_tools": [
+      "Read",
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids reading multiple route definition files and executing regex greps by querying the semantic search database for endpoint handlers.",
+    "original_text": "- Endpoints overview \u2014 A table of all HTTP endpoints with method, path, and one-line description. Discover:\n  Read files in `src/routes/`, `src/api/`, `app/api/`, `pages/api/` (Next.js), `routes/` directories.\n  Grep for `router.get|router.post|router.put|router.delete|app.get|app.post` patterns.",
+    "graph_text": "- Endpoints overview \u2014 A table of all HTTP endpoints with method, path, and one-line description. Discover:\n  Use semantic_search_nodes_tool (querying for route patterns, 'routes', or endpoint descriptors) to list registered routes."
+  },
+  {
+    "file_path": "agents/gsd-doc-writer.md",
+    "line_range": "343-346",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids full-tree regex searches for environment variables by querying the indexed AST nodes for 'process.env' expressions.",
+    "original_text": "- Environment variables \u2014 A table listing every environment variable with name, required/optional status, and\n  description. Discover: Read `.env.example` or `.env.sample` for the canonical list. Grep for `process.env.`",
+    "graph_text": "- Environment variables \u2014 A table listing every environment variable with name, required/optional status, and\n  description. Discover: Read `.env.example` or `.env.sample` for the canonical list. Use semantic_search_nodes_tool (query: \"process.env\")"
+  },
+  {
+    "file_path": "agents/gsd-eval-auditor.md",
+    "line_range": "66-88",
+    "original_tools": [
+      "Grep",
+      "Glob",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids spawning multiple slow and token-expensive shell processes (recursive find and multi-pattern greps) across the project files. Queries the semantic symbol index and AST structures directly to find tests, imports, config files, and guardrail functions.",
+    "original_text": "# Eval/test files\nfind . \\( -name \"*.test.*\" -o -name \"*.spec.*\" -o -name \"test_*\" -o -name \"eval_*\" \\) \\\n  -not -path \"*/node_modules/*\" -not -path \"*/.git/*\" 2>/dev/null | head -40\n\n# Tracing/observability setup\ngrep -r \"langfuse\\|langsmith\\|arize\\|phoenix\\|braintrust\\|promptfoo\" \\\n  --include=\"*.py\" --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -20\n\n# Eval library imports\ngrep -r \"from ragas\\|import ragas\\|from langsmith\\|BraintrustClient\" \\\n  --include=\"*.py\" --include=\"*.ts\" -l 2>/dev/null | head -20\n\n# Guardrail implementations\ngrep -r \"guardrail\\|safety_check\\|moderation\\|content_filter\" \\\n  --include=\"*.py\" --include=\"*.ts\" --include=\"*.js\" -l 2>/dev/null | head -20\n\n# Eval config files and reference dataset\nfind . \\( -name \"promptfoo.yaml\" -o -name \"eval.config.*\" -o -name \"*.jsonl\" -o -name \"evals*.json\" \\) \\\n  -not -path \"*/node_modules/*\" 2>/dev/null | head -10",
+    "graph_text": "- Search for evaluation and test files using semantic_search_nodes_tool (kind: \"Test\" or query: \"test\" / \"eval\").\n- Search for tracing, observability, and evaluation imports (e.g., langfuse, langsmith, braintrust, ragas) using semantic_search_nodes_tool or query_graph_tool.\n- Locate guardrail functions and modules (safety_check, moderation, guardrail) using semantic_search_nodes_tool.\n- Locate evaluation configuration files (e.g., promptfoo.yaml, eval.config.*) using semantic_search_nodes_tool (kind: \"File\", query: \"config\")."
+  },
+  {
+    "file_path": "agents/gsd-eval-planner.md",
+    "line_range": "73-78",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids invoking a recursive bash grep command to scan all repository code and configuration files. Directly queries the graph database index for references or imports of evaluation and tracing frameworks.",
+    "original_text": "grep -r \"langfuse\\|langsmith\\|arize\\|phoenix\\|braintrust\\|promptfoo\\|ragas\" \\\n  --include=\"*.py\" --include=\"*.ts\" --include=\"*.toml\" --include=\"*.json\" \\\n  -l 2>/dev/null | grep -v node_modules | head -10",
+    "graph_text": "Query the code graph database using semantic_search_nodes_tool or query_graph_tool (searching for frameworks like langfuse, langsmith, phoenix, braintrust, promptfoo, or ragas) to locate existing tracing configuration and dependencies."
+  },
+  {
+    "file_path": "agents/gsd-framework-selector.md",
+    "line_range": "19-21",
+    "original_tools": [
+      "Glob",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Low",
+    "rationale": "Replaces the disk-bound find shell command with a structured query to the AST graph index to locate top-level package and requirements files.",
+    "original_text": "find . -maxdepth 2 \\( -name \"package.json\" -o -name \"pyproject.toml\" -o -name \"requirements*.txt\" \\) -not -path \"*/node_modules/*\" 2>/dev/null | head -5",
+    "graph_text": "Use semantic_search_nodes_tool (kind: \"File\", querying for package.json, pyproject.toml, or requirements.txt) to identify package files in the project root."
+  },
+  {
+    "file_path": "agents/gsd-integration-checker.md",
+    "line_range": "125-148",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces recursive filesystem grep queries for symbol imports and usage across modules with direct import/caller queries in the AST graph database.",
+    "original_text": "check_export_used() {\n  local export_name=\"$1\"\n  local source_phase=\"$2\"\n  local search_path=\"${3:-src/}\"\n\n  # Find imports\n  local imports=$(grep -r \"import.*$export_name\" \"$search_path\" \\\n    --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | \\\n    grep -v \"$source_phase\" | wc -l)\n\n  # Find usage (not just import)\n  local uses=$(grep -r \"$export_name\" \"$search_path\" \\\n    --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | \\\n    grep -v \"import\" | grep -v \"$source_phase\" | wc -l)\n\n  if [ \"$imports\" -gt 0 ] && [ \"$uses\" -gt 0 ]; then\n    echo \"CONNECTED ($imports imports, $uses uses)\"\n  elif [ \"$imports\" -gt 0 ]; then\n    echo \"IMPORTED_NOT_USED ($imports imports, 0 uses)\"\n  else\n    echo \"ORPHANED (0 imports)\"\n  fi\n}",
+    "graph_text": "# Verify export usage using the AST graph database\nUse query_graph_tool (pattern: importers_of with the export name) to find all importing files, and query_graph_tool (pattern: callers_of with the export name) to identify actual call sites across the codebase."
+  },
+  {
+    "file_path": "agents/gsd-integration-checker.md",
+    "line_range": "181-202",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces brute-force recursive text searching for API route URLs inside fetch/axios calls with indexed semantic queries of URL references or API consumer components.",
+    "original_text": "  # Also check for dynamic routes (replace [id] with pattern)\n  local dynamic_route=$(echo \"$route\" | sed 's/\\[.*\\]/.*/g')",
+    "graph_text": "Use semantic_search_nodes_tool (query: dynamic pattern or route parameters) to locate referencing nodes and dynamically generated route handlers."
+  },
+  {
+    "file_path": "agents/gsd-integration-checker.md",
+    "line_range": "275-340",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "traverse_graph_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces step-by-step regex grepping and reading of candidate source files to reconstruct E2E caller chains with graph call-graph traversals.",
+    "original_text": "    # Step 2: Handler calls API\n    local calls_api=$(grep -E \"fetch.*$api_route|axios.*$api_route\" \"$form_file\" 2>/dev/null)\n    [ -n \"$calls_api\" ] && echo \"✓ Calls API\" || echo \"✗ Doesn't call API\"\n\n    # Step 3: Handles response\n    local handles_response=$(grep -E \"\\.then|await.*fetch|setError|setSuccess\" \"$form_file\" 2>/dev/null)",
+    "graph_text": "# Verify E2E flows\nTrace caller-to-callee relationships and dynamic data flow paths across frontend and API boundary modules using traverse_graph_tool and query_graph_tool (patterns: callers_of, callees_of)."
+  },
+  {
+    "file_path": "agents/gsd-intel-updater.md",
+    "line_range": "221-223",
+    "original_tools": [
+      "Glob",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "get_architecture_overview_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids reading the content of numerous source files to extract their imports and exports by querying their metadata directly from the AST graph database.",
+    "original_text": "Glob source files (`**/*.ts`, `**/*.js`, `**/*.py`, etc., excluding node_modules/dist/build).\nRead key files (entry points, configs, core modules) for imports/exports.\nWrite `file-roles.json`.",
+    "graph_text": "To populate imports and exports in file-roles.json, query the structural module signatures from the AST database using query_graph_tool (pattern: file_summary) or get_architecture_overview_tool.\nWrite `file-roles.json`."
+  },
+  {
+    "file_path": "agents/gsd-intel-updater.md",
+    "line_range": "232-234",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids brute-force grep matching across directories for API route signatures by performing semantic searches on routing nodes in the database.",
+    "original_text": "Grep for route definitions, endpoint declarations, CLI command registrations.\nPatterns to search: `app.get(`, `router.post(`, `@GetMapping`, `def route`, express route patterns.\nWrite `api-map.json`.",
+    "graph_text": "Query endpoint nodes and registered paths using semantic_search_nodes_tool (filtering by route keywords or Kind: \"File\").\nWrite `api-map.json`."
+  },
+  {
+    "file_path": "agents/gsd-pattern-mapper.md",
+    "line_range": "99-104",
+    "original_tools": [
+      "Glob"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "get_architecture_overview_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces raw filesystem globbing across directories to find matching component roles with targeted semantic queries and module structural overviews.",
+    "original_text": "# Find files by role patterns\nGlob(\"**/controllers/**/*.{ts,js,py,go,rs}\")\nGlob(\"**/services/**/*.{ts,js,py,go,rs}\")\nGlob(\"**/components/**/*.{ts,tsx,jsx}\")",
+    "graph_text": "# Find analog candidate files using the code graph\nUse semantic_search_nodes_tool (kind: \"File\", query: \"controllers\" / \"services\" / \"components\") or get_architecture_overview_tool to identify existing modules serving these architectural roles."
+  },
+  {
+    "file_path": "agents/gsd-pattern-mapper.md",
+    "line_range": "106-111",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces brute-force regex Grep processes scanning the entire tree for patterns with semantic entity and AST node searches.",
+    "original_text": "# Search for specific patterns\nGrep(\"class.*Controller\", type: \"ts\")\nGrep(\"export.*function.*handler\", type: \"ts\")\nGrep(\"router\\.(get|post|put|delete)\", type: \"ts\")",
+    "graph_text": "# Search for specific class, handler, or router symbols in the AST database\nUse semantic_search_nodes_tool (querying for Controller classes, handler functions, or routing methods) or query_graph_tool (pattern: file_summary) to locate matching architectural nodes."
+  },
+  {
+    "file_path": "agents/gsd-security-auditor.md",
+    "line_range": "66-74",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Avoids text-scanning implementation files for specific mitigation patterns by querying semantic node descriptors or AST entities in the code graph database.",
+    "original_text": "Grep for mitigation pattern in files cited in mitigation plan",
+    "graph_text": "Use semantic_search_nodes_tool to verify the presence of the mitigation pattern (e.g., security check, validator) within the cited code symbols"
+  },
+  {
+    "file_path": "agents/gsd-ui-auditor.md",
+    "line_range": "198-205",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Allows finding generic labels, empty states, and error copywriting strings via FTS queries in the AST database instead of full-file regex grep scans.",
+    "original_text": "# Find generic labels\ngrep -rn \"Submit\\|Click Here\\|OK\\|Cancel\\|Save\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null\n# Find empty state patterns\ngrep -rn \"No data\\|No results\\|Nothing\\|Empty\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null\n# Find error patterns\ngrep -rn \"went wrong\\|try again\\|error occurred\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null",
+    "graph_text": "# Find copywriting labels, empty state and error text patterns using semantic_search_nodes_tool\nUse semantic_search_nodes_tool (querying for copy string literals or FTS text matches such as \"Submit\", \"empty state\", \"error occurred\" directly in the graph)"
+  },
+  {
+    "file_path": "agents/gsd-ui-auditor.md",
+    "line_range": "222-271",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids massive recursive regex searches on source files to extract style classes (color, typography, spacing) and loading/error states by querying the AST nodes and symbol properties directly in the graph database.",
+    "original_text": "# Loading states\ngrep -rn \"loading\\|isLoading\\|pending\\|skeleton\\|Spinner\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null\n# Error states\ngrep -rn \"error\\|isError\\|ErrorBoundary\\|catch\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null\n# Empty states\ngrep -rn \"empty\\|isEmpty\\|no.*found\\|length === 0\" src --include=\"*.tsx\" --include=\"*.jsx\" 2>/dev/null",
+    "graph_text": "Use semantic_search_nodes_tool to query for experience states (loading, error, empty) in the codebase. Use query_graph_tool (pattern: file_summary) to examine state structures and component layouts."
+  },
+  {
+    "file_path": "agents/gsd-ui-researcher.md",
+    "line_range": "111-113",
+    "original_tools": [
+      "Glob",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Avoids scanning directories recursively for frontend files and stylesheet files on disk by querying indexed component files and styles in the AST graph database.",
+    "original_text": "# Find existing components\nfind src -name \"*.tsx\" -path \"*/components/*\" 2>/dev/null | head -20",
+    "graph_text": "# Find existing components using the code graph\nUse semantic_search_nodes_tool (kind: \"File\", query: \"components\") or query_graph_tool (pattern: file_summary) to identify active component nodes and styles."
+  },
+  {
+    "file_path": "agents/gsd-verifier.md",
+    "line_range": "244-249",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids scanning the codebase for import statements or references to specific files by querying importers/callers in the AST database directly.",
+    "original_text": "# Import check\ngrep -r \"import.*$artifact_name\" \"${search_path:-src/}\" --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | wc -l\n\n# Usage check (beyond imports)\ngrep -r \"$artifact_name\" \"${search_path:-src/}\" --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | grep -v \"import\" | wc -l",
+    "graph_text": "# Import and usage check using the code graph\nUse query_graph_tool (pattern: importers_of or callers_of with the artifact name) to check if the artifact is imported and utilized across the project files."
+  },
+  {
+    "file_path": "agents/gsd-verifier.md",
+    "line_range": "275-310",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "traverse_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces manual file grepping to trace state variables, dynamic fetches, and database calls with graph call chain analysis and property tracing.",
+    "original_text": "# Check the API route or data source for real DB queries vs static returns\ngrep -n -E \"prisma\\.|db\\.|query\\(|findMany|findOne|select|FROM\" \"$source_file\" 2>/dev/null\n# Flag: static returns with no query\ngrep -n -E \"return.*json\\(\\s*\\[\\]|return.*json\\(\\s*\\{\\}\" \"$source_file\" 2>/dev/null",
+    "graph_text": "Use query_graph_tool (pattern: callers_of, callees_of) to verify if the API handler uses active database models (e.g. Prisma queries) or simply returns hardcoded mock JSON arrays/objects."
+  },
+  {
+    "file_path": "agents/gsd-verifier.md",
+    "line_range": "341-375",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Avoids file-by-file pattern grepping for Component->API, API->DB, Form->Handler, and State->Render connections by querying call sites and relationships in the AST graph.",
+    "original_text": "grep -A 5 \"fetch\\|axios\" \"$component\" | grep -E \"await|\\.then|setData|setState\" 2>/dev/null",
+    "graph_text": "Use query_graph_tool (pattern: callers_of) to verify structural calls from client components to endpoints, ensuring that responses (e.g. state setters, then/await) are active and handled."
+  },
+  {
+    "file_path": "agents/gsd-verifier.md",
+    "line_range": "425-439",
+    "original_tools": [
+      "Grep"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "get_knowledge_gaps_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "Replaces full-file regex searches for stubs, hardcoded placeholders, empty functions, and debt comments with FTS index queries and knowledge gap checks.",
+    "original_text": "# Debt-marker comments\ngrep -n -E \"TBD|FIXME|XXX\" \"$file\" 2>/dev/null\n# Warning-level cleanup comments\ngrep -n -E \"TODO|HACK|PLACEHOLDER\" \"$file\" 2>/dev/null\ngrep -n -E \"placeholder|coming soon|will be here|not yet implemented|not available\" \"$file\" -i 2>/dev/null\n# Empty implementations\ngrep -n -E \"return null|return \\{\\}|return \\[\\]|=> \\{\\}\" \"$file\" 2>/dev/null",
+    "graph_text": "# Scan for anti-patterns using code graph search\nUse semantic_search_nodes_tool (querying for \"TODO\", \"FIXME\", \"return null\", \"placeholder\", etc.) or get_knowledge_gaps_tool to identify code smells, debt comments, and empty implementations."
+  }
+]

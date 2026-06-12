@@ -1,0 +1,131 @@
+[
+  {
+    "file_path": "gsd-core/workflows/add-tests.md",
+    "line_range": "147-152",
+    "original_tools": [
+      "Glob",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Replaces recursive filesystem searches for test directories and test files with indexed database lookups using the AST model.",
+    "original_text": "# Find existing test directories\nfind . -type d -name \"*test*\" -o -name \"*spec*\" -o -name \"*__tests__*\" 2>/dev/null | head -20\n# Find existing test files for convention matching\nfind . -type f \\( -name \"*.test.*\" -o -name \"*.spec.*\" -o -name \"*Tests.fs\" -o -name \"*Test.fs\" \\) 2>/dev/null | head -20",
+    "graph_text": "# Locate test directories and files using the code graph\nUse semantic_search_nodes_tool (kind: \"Test\" or query: \"test\" / \"spec\") to identify existing test locations and naming patterns."
+  },
+  {
+    "file_path": "gsd-core/workflows/audit-uat.md",
+    "line_range": "41-45",
+    "original_tools": [
+      "Grep",
+      "Read"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Instead of raw text grepping or reading entire files to check if a component, class, or function references still exist in the codebase, semantic_search_nodes_tool or query_graph_tool can be used to query the existence and metadata of these code symbols directly from the AST graph, saving parsing tokens.",
+    "original_text": "For each item in \"Testable Now\", use Grep/Read to check if the underlying feature still exists in the codebase:\n- If the test references a component/function that no longer exists → mark as `stale`\n- If the test references code that has been significantly rewritten → mark as `needs_update`",
+    "graph_text": "For each item in \"Testable Now\", check if the underlying feature still exists in the codebase using code-review-graph tools:\n- Use semantic_search_nodes_tool or query_graph_tool to search for the referenced component, class, or function symbol.\n- If no matching nodes are found in the AST graph → mark as `stale`\n- If the symbol is found, inspect its node metadata to verify if it has been updated or matches expectations → mark as `active` or `needs_update`"
+  },
+  {
+    "file_path": "gsd-core/workflows/discuss-phase-assumptions.md",
+    "line_range": "222-225",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Replaces raw filesystem grep text searches with semantic search queries against the AST code graph index, finding relevant source files faster and with higher relevance.",
+    "original_text": "**Step 2: If no codebase maps, do targeted grep**\n\nExtract key terms from phase goal, search for related files.\n\n```bash\ngrep -rl \"{term1}\\|{term2}\" src/ app/ --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -10\n```",
+    "graph_text": "**Step 2: If no codebase maps, do targeted semantic search**\n\nUse semantic_search_nodes_tool with queries based on phase goal key terms to find related classes, functions, or files in the code graph."
+  },
+  {
+    "file_path": "gsd-core/workflows/map-codebase.md",
+    "line_range": "293-298",
+    "original_tools": [
+      "Grep",
+      "Glob",
+      "Read",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "query_graph_tool",
+      "traverse_graph_tool",
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "High",
+    "rationale": "When performing sequential codebase mapping (e.g., in runtimes without subagent support), scanning the entire codebase using generic filesystem tools (Grep/Glob/Read) is extremely token-intensive. Utilizing code-review-graph tools allows the agent to query the pre-indexed AST code graph directly for architecture, structure, and quality conventions, drastically reducing the tokens needed to parse the workspace structure.",
+    "original_text": "When the `Agent` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.\n\n**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, list_dir, view_file, grep_search, or equivalent tools available in your runtime).",
+    "graph_text": "When the `Agent` tool is unavailable, perform codebase mapping sequentially in the current context. This replaces `spawn_agents` and `collect_confirmations`.\n\n**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Instead of generic codebase searches (Grep/Glob/Read), use code-review-graph tools (e.g., query_graph_tool, traverse_graph_tool, semantic_search_nodes_tool) to query the pre-indexed AST graph for architecture, structure, and quality conventions. Use local filesystem tools only to read specific package config files (like package.json, Cargo.toml) or specific code samples."
+  },
+  {
+    "file_path": "gsd-core/workflows/plant-seed.md",
+    "line_range": "122-125",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Replaces raw recursive filesystem text searches for seed-related keywords with semantic search queries against the AST code graph index to identify relevant source files.",
+    "original_text": "# Find files related to the idea keywords ($KEYWORD derived from $IDEA)\ngrep -rl \"$KEYWORD\" --include=\"*.ts\" --include=\"*.js\" --include=\"*.md\" . 2>/dev/null | head -10",
+    "graph_text": "# Locate files related to the seed keyword using semantic code graph search\nUse semantic_search_nodes_tool (query: \"$KEYWORD\") to locate classes, functions, or files relevant to the seed idea."
+  },
+  {
+    "file_path": "gsd-core/workflows/spec-phase.md",
+    "line_range": "103-108",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool",
+      "query_graph_tool",
+      "traverse_graph_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Replacing recursive filesystem grep searches with AST database queries via semantic search and graph traversal tools allows locating existing implementations and integration points quickly and using significantly fewer tokens.",
+    "original_text": "**Grep the codebase** for code/files relevant to this phase goal. Look for:\n- Existing implementations of similar functionality\n- Integration points where new code will connect\n- Test coverage gaps relevant to the phase\n- Prior phase artifacts (SUMMARY.md, VERIFICATION.md) that inform current state",
+    "graph_text": "Use code-review-graph tools to query the code structure and find integration points:\n- Use `semantic_search_nodes_tool` or `query_graph_tool` to search for classes, functions, or files related to the phase goal to locate existing implementations of similar functionality.\n- Use `traverse_graph_tool` or `get_impact_radius_tool` to explore the dependency hierarchy and identify where new code will connect (integration points).\n- Use local filesystem tools only to read specific prior phase artifacts (SUMMARY.md, VERIFICATION.md) under `.planning/` or targeted test files."
+  },
+  {
+    "file_path": "gsd-core/workflows/validate-phase.md",
+    "line_range": "62-65",
+    "original_tools": [
+      "Glob",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "semantic_search_nodes_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Replaces recursive find commands on the filesystem for test configurations and test files with optimized, pre-indexed queries to the AST graph index.",
+    "original_text": "find . -name \"pytest.ini\" -o -name \"jest.config.*\" -o -name \"vitest.config.*\" -o -name \"pyproject.toml\" 2>/dev/null | head -10\nfind . \\( -name \"*.test.*\" -o -name \"*.spec.*\" -o -name \"test_*\" \\) -not -path \"*/node_modules/*\" 2>/dev/null | head -40",
+    "graph_text": "Use semantic_search_nodes_tool (query: \"pytest.ini\", \"jest.config\", \"test\", \"spec\") to find test infrastructure and test files pre-indexed in the AST code graph."
+  },
+  {
+    "file_path": "gsd-core/workflows/verify-phase.md",
+    "line_range": "123-128",
+    "original_tools": [
+      "Grep",
+      "Bash"
+    ],
+    "suggested_mcp_tools": [
+      "traverse_graph_tool",
+      "query_graph_tool",
+      "get_impact_radius_tool"
+    ],
+    "token_savings_tier": "Medium",
+    "rationale": "Instead of running expensive recursive text grep commands to find imports and usage of a specific code artifact, the agent can use traverse_graph_tool or query_graph_tool to query the pre-indexed AST node relationships and dependencies, reducing token overhead.",
+    "original_text": "grep -r \"import.*$artifact_name\" src/ --include=\"*.ts\" --include=\"*.tsx\"  # IMPORTED\ngrep -r \"$artifact_name\" src/ --include=\"*.ts\" --include=\"*.tsx\" | grep -v \"import\"  # USED",
+    "graph_text": "Use traverse_graph_tool or query_graph_tool to search for dependencies and imports of the artifact node. You can also use get_impact_radius_tool to find files depending on it."
+  }
+]
